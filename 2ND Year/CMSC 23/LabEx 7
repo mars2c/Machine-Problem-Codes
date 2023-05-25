@@ -1,0 +1,211 @@
+from abc import ABC, abstractmethod
+from typing import ItemsView, ParamSpec
+
+class Bank(ABC):
+    accounts = []
+    def activate(self, name:str):        
+        Bank.accounts.append(name)
+        print(Bank.accounts)
+        return (name)
+    
+    def deactivate(self, name:str):
+        Bank.accounts.remove(name)
+        return (Bank.accounts)
+
+    def monthlyChange(self, money:float):
+        interest = 0.05
+        return (money * interest)
+
+class Transfer(ABC):
+    @abstractmethod
+    def transfer(self, account:Bank, money:float):
+        pass
+
+    @abstractmethod
+    def receivetransfer(self, received):
+        pass
+
+class Debit(Transfer):
+    def __init__(self, account:str, money: float):
+        self.__account = account
+        self.__money = money
+    
+    def monthlyChange(self, money:float):
+        change = Bank.monthlyChange(self, self.__money)
+        return change
+    
+    def transfer(self, account:Bank, money:float):
+        if money > self.__money:
+            print("Money to be transferred exceeds your balance.")
+        else:
+            self.__money = self.__money - money
+            return money
+        
+    def receivetransfer(self, received:Bank):
+        self.__money = self.__money + received
+        return self.__money
+
+    def withdraw(self, money:float):
+        self.__money = self.__money - money
+        if self.__money < 2500:
+            return ("You cannot withdraw exceeding the balance.")
+        else:
+            return self.__money
+
+    def deposit(self, money:float):
+        self.__money = self.__money + money 
+        return self.__money
+
+    def balanceJudgment(self):
+        if self.__money < 2500:
+            final = Bank.deactivate(self.__account)
+        return final   
+    
+    def activeORinactive(self, name:str):
+        ctr = 0
+        for i in range(len(Bank.accounts)):
+            if Bank.accounts[i] == name: 
+                ctr = 1
+            else:
+                pass
+
+        if ctr == 1:
+            if type(self) == Debit:
+                x = "Active"
+                return x
+        else:
+            x = "Inactive"
+            return x
+    
+    def accountInfo(self, name:str):
+        print("Account Info:")
+        return "Account Owner:" + self.__account + "\nType of Account: Debit" + "\nStatus of Account: " + Debit.activeORinactive(self, name)
+
+class Credit(Transfer):  
+    def __init__(self, account:str, money:float):
+        self.__account = account
+        self.__money = money
+        self.__temp  = []
+        self.__temp2 = []
+    
+    def monthlyChange(self, money:float):
+        change = Bank.monthlyChange(self, self.__money)
+        return change
+    
+    def withdraw(self, money:float, x):
+        if x == 1:
+           moneyOwed = money
+           self.__temp.append(moneyOwed)
+           return self.__temp
+        else:
+            if self.__money > 2500:
+                print("You cannot withdraw exceeding the Credit Limit.")
+            self.__money = self.__money - money
+            return self.__money
+    
+    def deposit(self, money:float):
+        self.__money = self.__money + money
+        self.__temp2.append(sum(self.__temp) - money)
+        return self.__money
+
+    def creditbalance(self, money:float, apply:int):
+        month = 1
+        for mon in range(1, 12):
+            if apply == 1:
+                x = Credit.monthlyChange(self, self.__temp)
+                return x
+            elif apply == 2:
+                return sum(self.__temp2)
+            else: 
+                return sum(self.__temp)
+
+    def creditLimit(self):
+        if sum(self.__temp) > 2500:
+            mora = self.__money
+            total = mora - sum(self.__temp)
+            return total
+        else:
+            return 0
+    
+    def transfer(self, account:Bank, money:float):
+        if money > Credit.creditLimit(self):
+            print("Money to be transferred exceeds your Credit Limit.")
+        else:
+            self.__money = self.__money - money
+            return money
+    
+    def receivetransfer(self, received:Bank):
+        self.__money = self.__money + received
+        return (self.__money)
+
+    def activeORinactive(self, name:str):
+        ctr = 0
+        for i in range(len(Bank.accounts)):
+            if Bank.accounts[i] == name:
+                ctr = 1
+            else:
+                pass
+
+        if ctr == 1:
+            if type(self) == Credit:
+                x = "Active"
+                return x
+        else:
+            x = "Inactive"
+            return x
+    
+    def accountInfo(self, name:str):
+        print("Account Info:")
+        return "Account Owner:" + self.__account + "\nType of Account: Credit" + "\nStatus of Account: " + Credit.activeORinactive(self, name)
+    
+    def balanceReport(self):        
+        return "\nAmount in Bank:" + str(self.__money) + "\nCredit Balance:" + str(Credit.creditbalance(self, self.__money, 2))
+
+class Payroll(Transfer):
+    def __init__(self, account:str, money: float):
+        self.__account = account
+        self.__money = money
+    
+    def monthlyChange(self, money:float):
+        change = Bank.monthlyChange(self, self.__money)
+        return change
+
+    def transfer(self, account:Bank, money:float):
+        print("Transfer is not possible.")
+
+    def receivetransfer(self, received:Bank):
+        self.__money = self.__money + received
+        return self.__money
+
+    def withdraw(self, money:float):
+        if self.__money < 2500:
+            print("Money cannot be withdrawed beyond the balance limit.")
+        else:
+            self.__money = self.__money - money
+            return self.__money    
+    
+    def activeORinactive(self, name:str):
+        ctr = 0
+        for i in range(len(Bank.accounts)):
+            if Bank.accounts[i] == name:
+                ctr = 1
+            else:
+                pass
+
+        if ctr == 1:
+            if type(self) == Payroll:
+                x = "Active"
+                return x
+        else:
+            x = "Inactive"
+            return x
+        
+    def accountInfo(self, name:str):
+        print("Account Info:")
+        return "Account Owner:" + self.__account + "\nType of Account: Payroll" + "\nStatus of Account: " + str(Payroll.activeORinactive(self, name))
+    
+    def balanceReport(self):        
+        return "\nAmount in Bank:" + str(self.__money) + "\Payroll Balance:" + str(self.__money)
+
+
+
