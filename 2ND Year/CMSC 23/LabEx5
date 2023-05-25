@@ -1,0 +1,126 @@
+#double
+def doubledInt(x):
+    return 2 * x
+
+x = int(input())
+doubledInt(x)
+
+print(doubledInt(x))
+print()
+
+#largest
+def largest(x, y):
+    if x > y:
+        return x
+    else:
+        return y
+
+x = float(input())
+y = float(input())
+largest(x, y)
+
+print(largest(x, y))
+print()
+
+#vertical line
+def isVertical(a, b):
+    if a[0] == b[0]:
+        return True
+    else:
+        return False
+
+a = list(map(float, input().split()))
+b = list(map(float, input().split()))
+
+isVertical(a, b)
+
+print(isVertical(a,b))
+print()
+
+#primes
+def primes(n):
+    num = 1
+    count = 1
+    while(count <= n):
+        i = 2
+        flag = 0
+        while(i <= num//2):
+            if(num % i == 0):
+                flag = flag + 1
+                break
+            i = i + 1
+        if(flag == 0 and num !=1):
+            print(num)
+            count = count + 1
+        num = num + 1
+
+n = int(input())
+primes(n)
+print()
+
+#fibonacci
+def fibonacciSequence(n):
+    if n == 0:
+        print(0)
+    else:
+        num = 1  #previous result
+        count = 1  #counter
+        result = 0  #current result 
+        temp = 0  
+        while(count <= n):
+                print(result)
+                temp = result
+                result = result + num
+                num = temp
+                count = count + 1 
+
+n = int(input())
+fibonacciSequence(n)
+print()
+
+#sorting
+def sortedIntegers(l):
+    for i in range(len(l)):
+        for j in range(i+1, len(l)):
+            if l[i] > l[j]:
+                l[i], l[j] = l[j], l[i]
+    print(l)
+    
+l = list(map(int,input().split()))
+sortedIntegers(l)
+print()
+
+
+#sublists
+def sublists(l):
+    sub = [[ ]]
+    for i in range(len(l) + 1):
+        for j in range(i + 1, len(l) + 1):
+            subli = l[i:j]
+            sub.append(subli)
+    print(sub)
+
+l = list(map(int,input().split()))
+sublists(l)
+print()
+
+
+#FME
+def fme(b:int, p:int, m:int) -> int:
+    x = 1
+    while p > 0:
+        b, p, x = (
+            b * b % m,
+            p // 2,
+            b * x % m 
+            if p % 2 
+            else x
+        )
+ 
+    print (x)
+
+b = int(input())
+p = int(input())
+m = int(input())
+
+fme(b,p,m)
