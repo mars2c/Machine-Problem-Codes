@@ -1,0 +1,183 @@
+from abc import ABC, abstractmethod
+from typing import ItemsView
+
+monthdays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+class Date:
+    def __init__(self, month:int, day:int, year:int):
+        self.__month = month
+        self.__day = day
+        self.__year = year   
+    def mdyFormat(self) -> str:
+        return str(self.__month) + "/" + str(self.__day) + "/" + str(self.__year)    
+    def LeapYears(day):
+        years = day.__year
+        if (day.__month <= 2):
+            years -= 1
+        return int(years/4) - int(years/100) + int(years/400)
+    def dateDifference(date, date2):
+        n1 = date.__year * 365 + date.__day
+        for i in range(0, date.__month - 1):
+            n1 += monthdays[i]
+        n1 += Date.LeapYears(date)
+        
+        n2 = date2.__year * 365 + date2.__day
+        for i in range(0, date2.__month - 1):
+            n2 += monthdays[i]
+        n2 += Date.LeapYears(date2)
+
+        result = n2 - n1
+        return result
+
+class Page:
+    def __init__(self, sectionHeader:str, body: str):
+        self.__sectionHeader = sectionHeader
+        self.__body = body
+
+class BorrowableItem(ABC):
+    @abstractmethod
+    def uniqueItemId(self) -> int:
+        pass
+    @abstractmethod
+    def commonName(self) -> str:
+        pass
+
+class Book(BorrowableItem):
+    def __init__(self, bookId:int, title:str, author:str, publishDate:Date, pages: [Page]):
+        self.__bookId = bookId
+        self.__title = title
+        self.__publishDate = publishDate
+        self.__author = author
+        self.__pages = pages
+    def coverInfo(self) -> str:
+        return "Title: " + self.__title + "\nAuthor: " + self.__author
+    def uniqueItemId(self) -> int:
+        return self.__bookId
+    def commonName(self) -> str:
+        return "Borrowed Item:" + self.__title + " by " + self.__author
+    def titleName(self) -> str:
+        return self.__title
+
+class Periodical(BorrowableItem):
+    def __init__(self, periodicalID:int, title:str, issue:Date, pages:[Page]):
+        self.__periodicalID = periodicalID
+        self.__title = title
+        self.__issue = issue
+        self.__pages = pages
+    def uniqueItemId(self) -> int:
+        return self.__periodicalID
+    def commonName(self) -> str:
+        return "Title: " + self.__title + "\nIssue Date: " + self.__issue.mdyFormat()
+    def titleName(self) -> str:
+        return self.__title
+
+class PC(BorrowableItem):
+    def __init__(self, pcID:int):
+        self.__pcID = pcID
+    def uniqueItemId(self) -> int:
+        return self.__pcID
+    def commonName(self) -> str:
+        return "PC" + str(self.__pcID)
+
+class LibraryCard:
+    def __init__(self, idNumber: int, name: str, borrowedItems: {BorrowableItem:Date}):
+            self.__idNumber = idNumber
+            self.__name = name
+            self.__borrowedItems = borrowedItems
+    def borrowItem(self,book:BorrowableItem, date:Date):
+        self.__borrowedItems[book] = date
+    def borrowerReport(self) -> str:
+        r:str = self.__name + "\n"
+        for borrowedItem in self.__borrowedItems:
+            r = r + borrowedItem.commonName() + ", borrow date:" + self.__borrowedItems[borrowedItem].mdyFormat() + "\n"
+            return r
+    def returnItem(self, b:BorrowableItem):
+        if b in self.__borrowedItems:
+            del self.__borrowedItems[b]
+    def penalty(self, b:BorrowableItem, today:Date) -> float: #This was computed assuming that, for example, I borrowed a book today therefore, today counts as Day 1 of 7
+        penaltypay = 3.5
+        daysBorrowed = Date.dateDifference(self.__borrowedItems[b], today)
+
+        if type(b)==Book:
+            due = 7
+            if daysBorrowed > due:
+                daysPastdue = (daysBorrowed - due)+1
+                penal = daysPastdue*penaltypay
+        elif type(b)==Periodical:
+            due = 1
+            if daysBorrowed > due:
+                daysPastdue = (daysBorrowed - due)+1
+                penal = daysPastdue*penaltypay
+        if type(b)==PC:
+            due = 0
+            if daysBorrowed > due:
+                daysPastdue = (daysBorrowed - due)+1
+                penal = daysPastdue*penaltypay
+        return penal          
+    def itemsDue(self, today:Date) -> [BorrowableItem]:
+        list = []
+        for item in self.__borrowedItems:
+            if type(item) == Book:
+                if Date.dateDifference(self.__borrowedItems[item],today) > 7:
+                    list.append(item.titleName())
+            elif type(item) == Periodical:
+                if Date.dateDifference(self.__borrowedItems[item],today) > 1:
+                    list.append(item.titleName())
+            elif type(item) == PC:
+                if Date.dateDifference(self.__borrowedItems[item],today) > 0:
+                    list.append(item.commonName())
+        return list                
+    def totalPenalty(self, today:Date) -> float: 
+        totalAmount = 0
+        totalDays = 0
+        for penalizedItem in self.__borrowedItems:
+            if type(penalizedItem) == Book:
+                if Date.dateDifference(self.__borrowedItems[penalizedItem], today) > 7:
+                    difference = Date.dateDifference(self.__borrowedItems[penalizedItem], today) - 6
+                    totalDays += difference
+            if type(penalizedItem) == Periodical:
+                if Date.dateDifference(self.__borrowedItems[penalizedItem], today) > 1:
+                    difference = Date.dateDifference(self.__borrowedItems[penalizedItem], today)
+                    totalDays += difference
+            if type(penalizedItem) == PC:
+                if Date.dateDifference(self.__borrowedItems[penalizedItem], today) > 7:
+                    difference = Date.dateDifference(self.__borrowedItems[penalizedItem], today) - 1
+                    totalDays += difference
+        totalAmount = (totalDays * 3.5)
+        return totalAmount
+
+
+
+
+
+
+
+
+
+
+
+
+
+b:BorrowableItem = Book(10991, "Corpus Hemeticum", "Hermes Trismegistus", Date(9,1,1991), [])
+print(b.commonName())
+print()
+
+c:BorrowableItem = Periodical(10921, "Help Save Lives", Date(3,23,1921), [])
+print(c.commonName())
+print()
+
+d:BorrowableItem = PC(1009219)
+print(d.commonName())
+print()
+
+l:LibraryCard = LibraryCard(9982, "Rubelito Abella", {})
+l.borrowItem(b, Date(10,29,2019))
+l.borrowItem(c, Date(10,30,2019))
+
+
+print(l.penalty(b, Date(11,11,2019)))
+print()
+print(l.penalty(c, Date(11,11,2019)))
+print()
+print(l.itemsDue(Date(11,11,2019)))
+print()
+print(l.totalPenalty(Date(11,11,2019)))
