@@ -1,0 +1,201 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<stdbool.h>
+
+int subyear(int yr){
+
+    if(yr % 100 == 0)  {  
+        if(yr % 400 == 0)  
+            return true;
+        else
+            return false;      
+    }  
+    else{  
+        if(yr % 4 == 0)  
+            return true;
+        else
+            return false;
+    }  
+}
+
+int subday(int day, int month, int yr, int doyr){
+    int feb;
+    int last2digits;
+    int lastdigit;
+    char suffix1, suffix2;
+   
+    doyr = day;
+
+    if(subyear(yr))
+        feb = 29;
+    else if(!subyear(yr))
+        feb = 28;
+
+    switch(month){
+        case 2:
+            doyr += 31;
+            break;
+        case 3:
+            doyr += 31+feb;
+            break;
+        case 4:
+            doyr += 31+feb+31;
+            break;
+        case 5:
+            doyr += 31+feb+31+30;
+            break;
+        case 6:
+            doyr += 31+feb+31+30+31;
+            break;
+        case 7:
+            doyr += 31+feb+31+30+31+30;
+            break;            
+        case 8:
+            doyr += 31+feb+31+30+31+30+31;
+            break;
+        case 9:
+            doyr += 31+feb+31+30+31+30+31+31;
+            break;
+        case 10:
+            doyr += 31+feb+31+30+31+30+31+31+30;            
+            break;            
+        case 11:
+            doyr += 31+feb+31+30+31+30+31+31+30+31;            
+            break;                        
+        case 12:
+            doyr += 31+feb+31+30+31+30+31+31+30+31+30;            
+            break;                                    
+    }
+
+        last2digits = doyr % 100;
+        lastdigit = last2digits % 10;
+
+        switch (lastdigit){
+            case 1:
+                suffix1 = 's';
+                suffix2 = 't';
+                break;
+
+            case 2:
+                suffix1 = 'n';
+                suffix2 = 'd';
+                break;
+
+            case 3:
+                suffix1 = 'r';
+                suffix2 = 'd';
+                break;
+            
+            default:
+                suffix1 = 't';
+                suffix2 = 'h';
+                break;
+        }
+
+        if(last2digits == 11 || last2digits == 12 || last2digits == 13 || last2digits == 14 || last2digits == 15 || last2digits == 16 || last2digits == 17 || last2digits == 18 || last2digits == 19){
+            suffix1 = 't';
+            suffix2 = 'h';
+        }
+
+        printf("%d%c%c of the year", doyr, suffix1, suffix2);
+}
+
+int subgauss(int day, int month, int yr){
+    int x, y, z, R;
+
+    x = (5 * ((yr - 1) % 4) % 7);
+    y = (4 * ((yr - 1) % 100) % 7);
+    z = (6 * ((yr - 1) % 400) % 7);
+    R = (1 + x + y + z) % 7;
+
+    if(R == 0){
+        printf("The 1st day of the year is: Sunday\n");
+    }
+    else if(R == 1){
+        printf("The 1st day of the year is: Monday\n");
+    }
+    else if(R == 2){
+        printf("The 1st day of the year is: Tuesday\n");
+    }
+    else if(R == 3){
+        printf("The 1st day of the year is: Wednesday\n");
+    }
+    else if(R == 4){
+        printf("The 1st day of the year is: Thursday\n");
+    }
+    else if(R == 5){
+        printf("The 1st day of the year is: Friday\n");
+    }
+    else if(R == 6){
+        printf("The 1st day of the year is: Saturday\n");
+    }
+    
+    return 0;
+}
+
+int main(){
+    char mth[256];
+    char dayNames[][12]={"Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"};
+    int yr, month, day, doyr, dowk, wday;
+    int wDayNo;
+
+        scanf("%d", &yr);
+
+    subyear(yr); //determining if year is leap year
+
+//determining if the input value for months is numerical and 0 < month <= 12
+
+    month = 0;
+
+    while((month < 1) || (month > 12)){
+            scanf("%d", &month);
+    }
+     
+// determining the date, day of year from the date, and week day
+
+    day = 0;
+    wDayNo = 0;
+    wday = 0;
+
+    if(month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12){
+        while(day < 1 || day > 31){
+            scanf("%d", &day);
+        }
+    }
+    else if(month == 4 || month == 6 || month == 9 || month == 11){
+        while(day < 1 || day > 30){
+            scanf("%d", &day);
+        }
+    }
+    else if(month == 2){
+            if(!subyear(yr)){
+                while(day < 1 || day > 28){
+                scanf("%d", &day);
+                }
+            }
+            else if(subyear(yr)){
+                while(day < 1 || day > 29){
+                scanf("%d", &day);
+                }
+            }        
+    }
+
+    wday = (day  + ((153 * (month + 12 * ((14 - month) / 12) - 3) + 2) / 5) \
+        + (365 * (yr + 4800 - ((14 - month) / 12)))              \
+        + ((yr + 4800 - ((14 - month) / 12)) / 4)                \
+        - ((yr + 4800 - ((14 - month) / 12)) / 100)              \
+        + ((yr + 4800 - ((14 - month) / 12)) / 400)              \
+        - 32045                                                    \
+        )%7;
+
+    printf("%s, ", dayNames[wday]);
+
+    subday(day, month, yr, doyr);
+
+// Gauss' method [calculating the wee day of January 1 in the Gregorian calendar]
+    
+//    subgauss(day, month, yr);
+
+return 0;
+}
